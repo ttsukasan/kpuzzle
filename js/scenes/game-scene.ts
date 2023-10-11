@@ -1,16 +1,16 @@
-import {CloneCrystal} from '../objects/clone-crystal';
-import {OriginalCrystal} from '../objects/original-crystal';
-import {CONST} from '../const/const';
-import {Fruit} from "../objects/fruit";
+// @ts-ignore
+import Phaser from 'phaser';
+import {CONST} from "../const";
+import config = require("tailwindcss/defaultConfig");
+
 
 export class GameScene extends Phaser.Scene {
-  private cloneCrystal: CloneCrystal;
-  private originalCrystal: OriginalCrystal;
-  private playerHasClicked: boolean;
-  private alphaDifferenceText: Phaser.GameObjects.Text;
-  private feedbackText: Phaser.GameObjects.Text;
+  private piecesGroup: Phaser.GameObjects.Group;
+  private piecesAmount: number;
+  private shuffledIndexArray: number[];
 
-  private fruits: Phaser.Physics.Matter.Image[] = [];
+  BOARD_COLS: number;
+  BOARD_ROWS: number;
 
   constructor() {
     super({
@@ -19,156 +19,190 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('crystal', CONST.imgPath.crystal);
-    this.load.image('ball-pink', CONST.imgPath.ballPink);
-    this.load.image('ball_01', CONST.imgPath.ball01);
-    this.load.image('ball_02', CONST.imgPath.ball02);
-    this.load.image('ball_03', CONST.imgPath.ball03);
-    this.load.image('ball_04', CONST.imgPath.ball04);
-
+    // ..
+    console.log(this.game)
+    // this.game.load.spritesheet("background", CONST.imgUrl.background, CONST.PIECE_WIDTH, CONST.PIECE_HEIGHT);
+    this.load.spritesheet("background", CONST.imgUrl.background, {
+      frameWidth: CONST.PIECE_WIDTH, frameHeight: CONST.PIECE_HEIGHT
+    });
   }
 
   init(): void {
-    this.playerHasClicked = false;
-    this.alphaDifferenceText = null;
-    this.feedbackText = null;
+    // ..
   }
 
   create(): void {
-    this.matter.world.setBounds(0, 0, CONST.canvasWidth, CONST.canvasHeight, 32, true, true, false, true);
-    for (let i = 0; i < 3; i++) {
-      this.fruits.push(new Fruit(
-        0, {
-          world: this.matter.world,
-          x: Phaser.Math.Between(50, 350),
-          y: Phaser.Math.Between(10, 50)
-        }
-      ))
-    }
-
-    this.matter.world.on("collisionstart", function (event, bodyA, bodyB) {
-      if (bodyA.gameObject instanceof Fruit && bodyB.gameObject instanceof Fruit) {
-        let [fruitA, fruitB] = [bodyA.gameObject, bodyB.gameObject];
-        if ((fruitA.rank === fruitB.rank) && fruitA.isRankUpable() && (fruitA.state === "normal" && fruitB.state === "normal")) {
-          console.log("衝突した", bodyA.gameObject, bodyB.gameObject);
-          if (fruitA.y < fruitB.y){
-            fruitA = bodyB.gameObject;
-            fruitB = bodyA.gameObject;
-          }
-          let posX = (fruitA.x + fruitB.x) / 2;
-          let posY = (fruitA.y + fruitB.y) / 2;
-          fruitB.workOut();
-          fruitA.rankUp();
-          fruitA.setPosition(posX,posY)
-          // 現在接しているものについてもう一度判定
-          console.log("collideIndexes", fruitA.collideIndexes)
-        }
-      }
-    })
-    // this.matter.world.on("collisionactive", function (event, bodyA, bodyB) {
-    //   if (bodyA.gameObject instanceof Fruit && bodyB.gameObject instanceof Fruit) {
-    //     console.log("衝突中", bodyA.gameObject, bodyB.gameObject);
-    //     let [fruitA, fruitB] = [bodyA.gameObject, bodyB.gameObject];
-    //     if ((fruitA.rank === fruitB.rank) && fruitA.rank < 4 && (fruitA.state === "normal" && fruitB.state === "normal")) {
-    //       if (fruitA.y < fruitB.y){
-    //         fruitA = bodyB.gameObject;
-    //         fruitB = bodyA.gameObject;
-    //       }
-    //       fruitB.workOut();
-    //       fruitA.rankUp();
-    //       fruitA.setX(10);
-    //       fruitA.setY(10);
-    //       // 現在接しているものについてもう一度判定
-    //       console.log("collideIndexes", fruitA.collideIndexes)
-    //     }
-    //   }
-    // })
-
-    // クリックイベント
-    this.input.on(
-      'pointerup',
-      function (event: Phaser.Input.Pointer){
-        console.log("クリック", event);
-        this.fruits.push(new Fruit(
-          0, {
-            world: this.matter.world,
-            x: event.upX,
-            y: event.upY
-          }
-        ));
-        // if (!this.playerHasClicked) {
-        //   this.playerHasClicked = true;
-        // } else {
-        //   this.scene.start('GameScene');
-        // }
-      },
-      this
-    );
+    // ..
+    this.prepareBoard();
   }
 
   update(): void {
-    // if (!this.playerHasClicked) {
-    //   this.cloneCrystal.update();
-    // } else {
-    //   let difference = this.calculateAlphaDifference();
-    //   this.createResultTexts(difference);
-    // }
+    // ..
   }
 
-  private calculateAlphaDifference(): number {
-    return Math.abs(this.cloneCrystal.alpha - this.originalCrystal.alpha);
-  }
+  prepareBoard(): void {
 
-  private createResultTexts(difference: number): void {
-    this.alphaDifferenceText = this.add.text(
-      this.sys.canvas.width / 2 - 100,
-      this.sys.canvas.height / 2 + 100,
-      difference.toFixed(2) + '',
-      {
-        fontFamily: 'Arial',
-        fontSize: 100 + 'px',
-        stroke: '#000000',
-        strokeThickness: 8,
-        color: '#ffffff'
+    var piecesIndex = 0,
+      i, j,
+      piece;
+
+    this.BOARD_COLS = Math.floor(CONST.SUBJECT_WIDTH / CONST.PIECE_WIDTH);
+    this.BOARD_ROWS = Math.floor(CONST.SUBJECT_HEIGHT / CONST.PIECE_HEIGHT);
+
+    this.piecesAmount = this.BOARD_COLS * this.BOARD_ROWS;
+    console.log("piecesAmount", this.piecesAmount);
+    this.shuffledIndexArray = this.createShuffledIndexArray();
+
+    this.piecesGroup = this.add.group();
+
+    for (i = 0; i < this.BOARD_ROWS; i++) {
+      for (j = 0; j < this.BOARD_COLS; j++) {
+        console.log("index", this.shuffledIndexArray[piecesIndex]);
+        const x = j * CONST.PIECE_WIDTH + CONST.PIECE_WIDTH / 2;
+        const y = i * CONST.PIECE_HEIGHT + CONST.PIECE_HEIGHT / 2;
+        if (this.shuffledIndexArray[piecesIndex]) {
+          piece = this.piecesGroup.create(x, y, "background", this.shuffledIndexArray[piecesIndex]);
+        } else { //initial position of black piece
+          piece = this.piecesGroup.create(x, y);
+          piece.black = true;
+        }
+        console.log(piece)
+        piece.name = 'piece' + i.toString() + 'x' + j.toString();
+        piece.currentIndex = piecesIndex;
+        piece.destIndex = this.shuffledIndexArray[piecesIndex];
+        // piece.inputEnabled = true;
+        piece.setInteractive();
+        piece.on("pointerdown", this.selectPiece, this);
+        // piece.on("pointerdown", () => {
+        //   console.log("selectPiece", piece);
+        // })
+        piece.posX = j;
+        piece.posY = i;
+        piecesIndex++;
+        console.log(piece);
       }
-    );
+    }
 
-    let textConfig: Phaser.Types.GameObjects.Text.TextStyle = {
-      fontFamily: 'Arial',
-      fontSize: 50 + 'px',
-      stroke: '#000000',
-      strokeThickness: 8,
-      color: '#ffffff'
+  }
+
+  selectPiece(piece): void {
+    console.log("selectPiece", piece);
+    var blackPiece = this.canMove(piece);
+
+    //if there is a black piece in neighborhood
+    if (blackPiece) {
+      this.movePiece(piece, blackPiece);
+    }
+
+  }
+
+  canMove(piece): void {
+
+    var foundBlackElem = false;
+
+    console.log("piecesGroup", this.piecesGroup)
+    this.piecesGroup.children.entries.forEach(function (element) {
+      console.log("element", element);
+      if (element.posX === (piece.posX - 1) && element.posY === piece.posY && element.black ||
+        element.posX === (piece.posX + 1) && element.posY === piece.posY && element.black ||
+        element.posY === (piece.posY - 1) && element.posX === piece.posX && element.black ||
+        element.posY === (piece.posY + 1) && element.posX === piece.posX && element.black) {
+        foundBlackElem = element;
+        return;
+      }
+    });
+
+    return foundBlackElem;
+  }
+
+  movePiece(piece, blackPiece): void {
+    console.log("movePiece", piece, blackPiece);
+
+    var tmpPiece = {
+      posX: piece.posX,
+      posY: piece.posY,
+      currentIndex: piece.currentIndex
     };
 
-    if (difference >= 0.5) {
-      this.feedbackText = this.add.text(
-        this.sys.canvas.width / 2 - 250,
-        this.sys.canvas.height / 2 - 150,
-        'You can do better!',
-        textConfig
-      );
-    } else if (difference < 0.5 && difference >= 0.3) {
-      this.feedbackText = this.add.text(
-        this.sys.canvas.width / 2 - 40,
-        this.sys.canvas.height / 2 - 150,
-        'OK!',
-        textConfig
-      );
-    } else if (difference < 0.3 && difference >= 0.1) {
-      this.feedbackText = this.add.text(
-        this.sys.canvas.width / 2 - 90,
-        this.sys.canvas.height / 2 - 150,
-        'Great!',
-        textConfig
-      );
-    } else if (difference < 0.1) {
-      this.feedbackText = this.add.text(
-        this.sys.canvas.width / 2 - 145,
-        this.sys.canvas.height / 2 - 150,
-        'Wonderful!',
-        textConfig
-      );
-    }
+    this.geme.add.tween(piece).to({
+      x: blackPiece.posX * CONST.PIECE_WIDTH,
+      y: blackPiece.posY * CONST.PIECE_HEIGHT
+    }, 300, Phaser.Easing.Linear.None, true);
+
+    //change places of piece and blackPiece
+    piece.posX = blackPiece.posX;
+    piece.posY = blackPiece.posY;
+    piece.currentIndex = blackPiece.currentIndex;
+    piece.name = 'piece' + piece.posX.toString() + 'x' + piece.posY.toString();
+
+    //piece is the new black
+    blackPiece.posX = tmpPiece.posX;
+    blackPiece.posY = tmpPiece.posY;
+    blackPiece.currentIndex = tmpPiece.currentIndex;
+    blackPiece.name = 'piece' + blackPiece.posX.toString() + 'x' + blackPiece.posY.toString();
+
+    //after every move check if puzzle is completed
+    this.checkIfFinished();
   }
+
+  checkIfFinished(): void {
+
+    var isFinished = true;
+
+    this.piecesGroup.children.forEach(function (element) {
+      if (element.currentIndex !== element.destIndex) {
+        isFinished = false;
+        return;
+      }
+    });
+
+    if (isFinished) {
+      this.showFinishedText();
+    }
+
+  }
+
+  showFinishedText(): void {
+
+    var style = {font: "40px Arial", fill: "#000", align: "center"};
+
+    // var text = this.add.text(game.world.centerX, game.world.centerY, "Congratulations! \nYou made it!", style);
+
+    // text.anchor.set(0.5);
+
+  }
+
+  createShuffledIndexArray(): number[] {
+
+    var indexArray = [];
+
+    for (var i = 0; i < this.piecesAmount; i++) {
+      indexArray.push(i);
+    }
+
+    return this.shuffle(indexArray);
+
+  }
+
+  shuffle(array): number[] {
+
+    var counter = array.length,
+      temp,
+      index;
+
+    while (counter > 0) {
+      index = Math.floor(Math.random() * counter);
+
+      counter--;
+
+      temp = array[counter];
+      array[counter] = array[index];
+      array[index] = temp;
+    }
+
+    return array;
+
+  }
+
+
 }

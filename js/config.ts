@@ -1,5 +1,5 @@
 import {GameScene} from './scenes/game-scene';
-import {CONST} from "./const/const";
+import {CONST} from './const';
 
 export const GameConfig: Phaser.Types.Core.GameConfig = {
   title: 'Alpha Adjust',
@@ -17,12 +17,12 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
   input: {
     mouse: true
   },
-  physics: {
-    default: 'matter',
-    matter: {
-      enableSleeping: true
-    }
-  },
+  // physics: {
+  //   default: 'matter',
+  //   matter: {
+  //     enableSleeping: true
+  //   }
+  // },
   backgroundColor: '#ffffee',
   render: {pixelArt: false, antialias: true}
 };

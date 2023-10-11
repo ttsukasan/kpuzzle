@@ -8,7 +8,7 @@
   "license": "",
   "author": "ttsukasan",
   "scripts": {
-    "build": "parcel build index.html --dist-dir ./docs --public-url /fruit-dump/",
+    "build": "parcel build index.html --dist-dir ./docs --public-url /kpuzzle/",
     "dev": "parcel index.html --open --dist-dir ./docs",
     "start": "npm run build && npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
