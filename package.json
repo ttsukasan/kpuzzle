@@ -1,5 +1,5 @@
 {
-  "name": "mobile-site-202310",
+  "name": "kpuzzle",
   "version": "0.0.1",
   "description": "description",
   "keywords": [
@@ -8,7 +8,7 @@
   "license": "",
   "author": "ttsukasan",
   "scripts": {
-    "build": "parcel build index.html --dist-dir ./docs --public-url /mobile-site-202310/",
+    "build": "parcel build index.html --dist-dir ./docs --public-url /fruit-dump/",
     "dev": "parcel index.html --open --dist-dir ./docs",
     "start": "npm run build && npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,8 +21,12 @@
     "@parcel/transformer-raw": "^2.0.0",
     "@parcel/transformer-typescript-tsc": "^2.0.0",
     "@parcel/transformer-webmanifest": "^2.0.0",
+    "parcel": "^2.0.0-nightly.1383",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.3",
-    "parcel": "^2.0.0-nightly.1383"
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "phaser": "^3.60.0"
   }
 }
