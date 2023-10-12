@@ -20,7 +20,6 @@ export class GameScene extends Phaser.Scene {
 
   preload(): void {
     // ..
-    console.log(this.game)
     // this.game.load.spritesheet("background", CONST.imgUrl.background, CONST.PIECE_WIDTH, CONST.PIECE_HEIGHT);
     this.load.spritesheet("background", CONST.imgUrl.background, {
       frameWidth: CONST.PIECE_WIDTH, frameHeight: CONST.PIECE_HEIGHT
@@ -34,6 +33,7 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     // ..
     this.prepareBoard();
+    console.log(this)
   }
 
   update(): void {
@@ -50,14 +50,12 @@ export class GameScene extends Phaser.Scene {
     this.BOARD_ROWS = Math.floor(CONST.SUBJECT_HEIGHT / CONST.PIECE_HEIGHT);
 
     this.piecesAmount = this.BOARD_COLS * this.BOARD_ROWS;
-    console.log("piecesAmount", this.piecesAmount);
     this.shuffledIndexArray = this.createShuffledIndexArray();
 
     this.piecesGroup = this.add.group();
 
     for (i = 0; i < this.BOARD_ROWS; i++) {
       for (j = 0; j < this.BOARD_COLS; j++) {
-        console.log("index", this.shuffledIndexArray[piecesIndex]);
         const x = j * CONST.PIECE_WIDTH + CONST.PIECE_WIDTH / 2;
         const y = i * CONST.PIECE_HEIGHT + CONST.PIECE_HEIGHT / 2;
         if (this.shuffledIndexArray[piecesIndex]) {
@@ -66,27 +64,33 @@ export class GameScene extends Phaser.Scene {
           piece = this.piecesGroup.create(x, y);
           piece.black = true;
         }
-        console.log(piece)
+        // console.log(piece, piece.black)
         piece.name = 'piece' + i.toString() + 'x' + j.toString();
         piece.currentIndex = piecesIndex;
         piece.destIndex = this.shuffledIndexArray[piecesIndex];
         // piece.inputEnabled = true;
+        // piece.setInteractive().on('pointerdown', function() {
+        //   GameScene.
+        // });
         piece.setInteractive();
-        piece.on("pointerdown", this.selectPiece, this);
-        // piece.on("pointerdown", () => {
+        // piece.on("pointerdown", this.selectPiece, piece); // piece:pointer this:sprite
+
+        // piece.on("pointerdown", (p, x, y, o, piece) => {
         //   console.log("selectPiece", piece);
-        // })
+        // this.selectPiece(piece);
+        // }, piece)
+
+        piece.on("pointerdown", this.selectPiece.bind(this, piece));
+
         piece.posX = j;
         piece.posY = i;
         piecesIndex++;
-        console.log(piece);
       }
     }
 
   }
 
-  selectPiece(piece): void {
-    console.log("selectPiece", piece);
+  selectPiece(piece, pointer): void {
     var blackPiece = this.canMove(piece);
 
     //if there is a black piece in neighborhood
@@ -96,13 +100,12 @@ export class GameScene extends Phaser.Scene {
 
   }
 
-  canMove(piece): void {
+  canMove(piece): Phaser.GameObjects.Sprite | null {
 
     var foundBlackElem = false;
-
-    console.log("piecesGroup", this.piecesGroup)
+    console.log("piece", piece.posX, piece.posY, piece.black);
     this.piecesGroup.children.entries.forEach(function (element) {
-      console.log("element", element);
+      console.log("element", element.posX, element.posY, element.black);
       if (element.posX === (piece.posX - 1) && element.posY === piece.posY && element.black ||
         element.posX === (piece.posX + 1) && element.posY === piece.posY && element.black ||
         element.posY === (piece.posY - 1) && element.posX === piece.posX && element.black ||
@@ -124,10 +127,20 @@ export class GameScene extends Phaser.Scene {
       currentIndex: piece.currentIndex
     };
 
-    this.geme.add.tween(piece).to({
-      x: blackPiece.posX * CONST.PIECE_WIDTH,
-      y: blackPiece.posY * CONST.PIECE_HEIGHT
-    }, 300, Phaser.Easing.Linear.None, true);
+    this.tweens.add({
+      x: blackPiece.posX * CONST.PIECE_WIDTH + CONST.PIECE_WIDTH / 2,
+      y: blackPiece.posY * CONST.PIECE_HEIGHT + CONST.PIECE_HEIGHT / 2,
+
+      targets: piece,
+      // x: 700,
+      duration: 300,
+      // repeatDelay: 500,
+      ease: 'linear'
+    })
+    // this.add.tween(piece).to({
+    //   x: blackPiece.posX * CONST.PIECE_WIDTH,
+    //   y: blackPiece.posY * CONST.PIECE_HEIGHT
+    // }, 300, Phaser.Easing.Linear.None, true);
 
     //change places of piece and blackPiece
     piece.posX = blackPiece.posX;
@@ -149,27 +162,26 @@ export class GameScene extends Phaser.Scene {
 
     var isFinished = true;
 
-    this.piecesGroup.children.forEach(function (element) {
+    this.piecesGroup.children.entries.forEach(function (element) {
       if (element.currentIndex !== element.destIndex) {
         isFinished = false;
         return;
       }
     });
 
-    if (isFinished) {
-      this.showFinishedText();
-    }
+    // if (isFinished) {
+    this.showFinishedText();
+    // }
 
   }
 
   showFinishedText(): void {
 
-    var style = {font: "40px Arial", fill: "#000", align: "center"};
+    var style = {font: "40px Arial", fill: "#ffffff", align: "center"};
 
-    // var text = this.add.text(game.world.centerX, game.world.centerY, "Congratulations! \nYou made it!", style);
-
-    // text.anchor.set(0.5);
-
+    var text = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, "Congratulations! \nYou made it!", style);
+    text.setPosition(this.cameras.main.centerX - text.width / 2, this.cameras.main.centerY - text.height / 2);
+    // text.anchor.set(0.5); // なにこれ
   }
 
   createShuffledIndexArray(): number[] {
