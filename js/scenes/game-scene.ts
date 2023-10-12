@@ -169,9 +169,9 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // if (isFinished) {
-    this.showFinishedText();
-    // }
+    if (isFinished) {
+      this.showFinishedText();
+    }
 
   }
 
