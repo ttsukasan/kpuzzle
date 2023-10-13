@@ -1,4 +1,5 @@
 import {GameScene} from './scenes/game-scene';
+import {BootScene} from './scenes/boot-scene';
 import {CONST} from './const';
 
 export const GameConfig: Phaser.Types.Core.GameConfig = {
@@ -7,7 +8,7 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
   version: '2.0',
   type: Phaser.AUTO,
   parent: 'game',
-  scene: [GameScene],
+  scene: [BootScene, GameScene],
   scale: {
     mode: Phaser.Scale.FIT,
     parent: 'game-wrapper',
@@ -17,12 +18,6 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
   input: {
     mouse: true
   },
-  // physics: {
-  //   default: 'matter',
-  //   matter: {
-  //     enableSleeping: true
-  //   }
-  // },
-  backgroundColor: '#ffffee',
+  backgroundColor: '#d6d3d1',
   render: {pixelArt: false, antialias: true}
 };

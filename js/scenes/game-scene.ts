@@ -1,8 +1,6 @@
 // @ts-ignore
 import Phaser from 'phaser';
 import {CONST} from "../const";
-import config = require("tailwindcss/defaultConfig");
-
 
 export class GameScene extends Phaser.Scene {
   private piecesGroup: Phaser.GameObjects.Group;
@@ -19,11 +17,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // ..
-    // this.game.load.spritesheet("background", CONST.imgUrl.background, CONST.PIECE_WIDTH, CONST.PIECE_HEIGHT);
-    this.load.spritesheet("background", CONST.imgUrl.background, {
-      frameWidth: CONST.PIECE_WIDTH, frameHeight: CONST.PIECE_HEIGHT
-    });
+    // this.load.spritesheet("background", CONST.imgUrl.background, {
+    //   frameWidth: CONST.PIECE_WIDTH, frameHeight: CONST.PIECE_HEIGHT
+    // });
+    // this.load.spritesheet("blank", CONST.imgUrl.blank, {
+    //   frameWidth: CONST.PIECE_WIDTH, frameHeight: CONST.PIECE_HEIGHT
+    // })
   }
 
   init(): void {
@@ -61,7 +60,7 @@ export class GameScene extends Phaser.Scene {
         if (this.shuffledIndexArray[piecesIndex]) {
           piece = this.piecesGroup.create(x, y, "background", this.shuffledIndexArray[piecesIndex]);
         } else { //initial position of black piece
-          piece = this.piecesGroup.create(x, y);
+          piece = this.piecesGroup.create(x, y, "blank", 0, false);
           piece.black = true;
         }
         // console.log(piece, piece.black)
@@ -103,9 +102,9 @@ export class GameScene extends Phaser.Scene {
   canMove(piece): Phaser.GameObjects.Sprite | null {
 
     var foundBlackElem = false;
-    console.log("piece", piece.posX, piece.posY, piece.black);
+    // console.log("piece", piece.posX, piece.posY, piece.black);
     this.piecesGroup.children.entries.forEach(function (element) {
-      console.log("element", element.posX, element.posY, element.black);
+      // console.log("element", element.posX, element.posY, element.black);
       if (element.posX === (piece.posX - 1) && element.posY === piece.posY && element.black ||
         element.posX === (piece.posX + 1) && element.posY === piece.posY && element.black ||
         element.posY === (piece.posY - 1) && element.posX === piece.posX && element.black ||
@@ -119,7 +118,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   movePiece(piece, blackPiece): void {
-    console.log("movePiece", piece, blackPiece);
 
     var tmpPiece = {
       posX: piece.posX,
@@ -135,7 +133,7 @@ export class GameScene extends Phaser.Scene {
       // x: 700,
       duration: 300,
       // repeatDelay: 500,
-      ease: 'linear'
+      ease: 'quint.out'
     })
     // this.add.tween(piece).to({
     //   x: blackPiece.posX * CONST.PIECE_WIDTH,

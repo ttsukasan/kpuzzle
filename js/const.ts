@@ -9,5 +9,6 @@ export let CONST = {
   canvasHeight: 600,
   imgUrl: {
     background: require('../img/bl.jpg'),
+    blank: require('../img/blank.png')
   }
 }
